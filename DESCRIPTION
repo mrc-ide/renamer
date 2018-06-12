@@ -1,0 +1,8 @@
+Package: renamer
+Version: 0.0.1
+Title: Rename Misspelt Things
+Description: Identify and iteratively fix typographic errors in data.
+Authors@R: person("Rich", "FitzJohn",
+                  email = "rich.fitzjohn@gmail.com", role = c("aut", "cre"))
+License: MIT + file LICENSE
+Encoding: UTF-8

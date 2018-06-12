@@ -1,0 +1,10 @@
+^\.travis\.yml$
+^Makefile$
+^notes\.md$
+^renamer_.*\.tar.gz$
+^update_web\.sh$
+^docs$
+^revdep$
+^scripts$
+^vignettes_src$
+^appveyor\.yml$
