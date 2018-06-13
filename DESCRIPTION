@@ -6,3 +6,6 @@ Authors@R: person("Rich", "FitzJohn",
                   email = "rich.fitzjohn@gmail.com", role = c("aut", "cre"))
 License: MIT + file LICENSE
 Encoding: UTF-8
+Imports:
+    stringdist,
+    stringi
