@@ -26,12 +26,13 @@ recode_character_suggest <- function(x, table, threshhold = 0.3, n = 2L) {
     to <- res$known
 
     d <- stringdist::stringdistmatrix(missed_clean, target, method = "jw")
+    d_best <- apply(d, 1, min)
 
     ## This does not capture *how* we get to a match but that's
     ## generally pretty hard to convey and probably not that
     ## interesting.
     best_to <- function(r) {
-      ret <- unique(to[rank(r, ties.method = "first")[r < threshhold]])
+      ret <- unique(to[rank(r, ties.method = "first")[r <= threshhold]])
       if (length(ret) < n) {
         ret <- c(ret, rep_len(NA_character_, n - length(ret)))
       } else {
@@ -44,13 +45,48 @@ recode_character_suggest <- function(x, table, threshhold = 0.3, n = 2L) {
     colnames(suggestions) <-
       sprintf("suggestion_%d", seq_len(ncol(suggestions)))
 
-    j <- order(suggestions[, 1])
+    j <- order(suggestions[, 1], d_best)
     res$suggestions <- data_frame(
       from = missed[j],
-      clean = missed_clean[j],
-      suggestions[j, ])
+      suggestions[j, ],
+      distance_best = round(d_best[j], 2))
   }
   res
+}
+
+
+recode_character_iterate <- function(x, filename_table, filename_new = NULL,
+                                     ..., overwrite = FALSE) {
+  if (is.null(filename_new)) {
+    base <- sub("\\.csv$", "", filename_table, ignore.case = TRUE)
+    filename_new <- sprintf("%s_new.csv", base)
+  }
+  if (file.exists(filename_new) && !overwrite) {
+    stop(sprintf(
+      "File '%s' exists; please remove to continue (or use overwrite = TRUE)",
+      filename_new))
+  }
+
+  table <- read_csv(filename_table)
+  msg <- setdiff(c("from", "to"), names(table))
+  if (length(msg) > 0L) {
+    stop("Missing columns in '%s': %s", filename_table,
+         paste(msg, collapse = ", "))
+  }
+  dat <- recode_character_suggest(x, table, ...)
+
+  if (!dat$all_matched) {
+    message(sprintf("Matched %d / %d entries",
+                    sum(!dat$is_unmatched), length(dat$is_unmatched)))
+    s <- dat$suggestions
+    write_csv(s, filename_new)
+
+    message(sprintf("Suggestions added to '%s'", filename_new))
+    message(sprintf("Copy these into '%s', delete '%s' and rerun",
+                    filename_table, filename_new))
+  }
+
+  dat
 }
 
 
